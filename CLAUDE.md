@@ -205,6 +205,136 @@ UserLoginForm.cs                 → PyQt Dialog
 - C#: Visual Studio Debugger
 - Python: PyCharm Debugger, pdb
 
+## 멀티 PC 작업 환경 설정
+
+### 현재 작업 환경
+- **사무실 PC**: 주 개발 환경 (WSL2 Ubuntu)
+- **집 PC**: 보조 개발 환경 (설정 예정)
+- **GitHub 저장소**: claude-stock-trading-system
+
+### 집 PC 초기 설정 가이드
+
+#### 1단계: 기본 개발 환경 설치
+```bash
+# Windows에서 WSL2 설치 (관리자 권한으로 PowerShell 실행)
+wsl --install
+
+# 또는 기존 Linux 환경에서
+sudo apt update && sudo apt upgrade -y
+```
+
+#### 2단계: Git 설정
+```bash
+# Git 사용자 정보 설정
+git config --global user.name "jang1230"
+git config --global user.email "your_email@example.com"
+
+# 저장소 클론
+git clone https://github.com/jang1230/claude-stock-trading-system.git
+cd claude-stock-trading-system
+```
+
+#### 3단계: SSH 키 생성 및 GitHub 연동
+```bash
+# SSH 키 생성 (집 PC용)
+ssh-keygen -t rsa -b 4096 -C "jang1230-home@github.com"
+
+# 공개키 확인 및 복사
+cat ~/.ssh/id_rsa.pub
+
+# GitHub Settings > SSH and GPG keys에서 "New SSH key" 추가
+# Title: "Home PC - WSL2" 
+# Key: 위에서 복사한 내용 붙여넣기
+```
+
+#### 4단계: SSH 연결 테스트
+```bash
+# GitHub 호스트 키 추가
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+# SSH 연결 테스트
+ssh -T git@github.com
+# 성공 시: "Hi jang1230! You've successfully authenticated..."
+
+# Remote URL을 SSH로 변경
+git remote set-url origin git@github.com:jang1230/claude-stock-trading-system.git
+```
+
+#### 5단계: 개발 도구 설치 (선택사항)
+```bash
+# C# 개발 (Visual Studio Code + C# extension)
+sudo snap install code --classic
+
+# Python 개발 환경
+sudo apt install python3 python3-pip python3-venv
+```
+
+### 일상적인 멀티 PC 작업 플로우
+
+#### 🏢 사무실에서 작업 시작
+```bash
+git pull                    # 집에서 작업한 내용 받아오기
+# 작업 진행...
+git add .
+git commit -m "feat: 새 기능 구현"
+git push                    # GitHub에 업로드
+```
+
+#### 🏠 집에서 작업 계속
+```bash
+git pull                    # 사무실에서 작업한 내용 받아오기  
+# 작업 진행...
+git add .
+git commit -m "refactor: 코드 리팩토링"
+git push                    # GitHub에 업로드
+```
+
+### 충돌 방지 및 해결 가이드
+
+#### 작업 전 필수 체크리스트
+- [ ] `git pull` 실행하여 최신 코드 받아오기
+- [ ] 작업할 파일이 다른 PC에서 수정되지 않았는지 확인
+- [ ] 작업 완료 후 즉시 `git push` 실행
+
+#### 충돌 발생 시 해결 방법
+```bash
+# 충돌 발생 시
+git pull                    # 충돌 파일 확인
+# 충돌된 파일 수동 편집 (<<<< ==== >>>> 마크 제거)
+git add .
+git commit -m "resolve: 충돌 해결"
+git push
+```
+
+### PC별 역할 분담 (권장)
+
+#### 🏢 사무실 PC
+- C# 코드 분석 및 개선
+- 데이터베이스 모델 설계
+- 웹 API 개발
+- GitHub 이슈 관리
+
+#### 🏠 집 PC  
+- Python 변환 작업
+- PyQt UI 개발
+- 테스트 및 디버깅
+- 문서 작성
+
+### 백업 및 동기화 전략
+
+#### 자동 백업 설정 (선택사항)
+```bash
+# 작업 전 자동 pull을 위한 alias 설정
+echo 'alias work="git pull && echo 작업 준비 완료!"' >> ~/.bashrc
+echo 'alias save="git add . && git commit -m 'auto-save: 작업 중간 저장' && git push"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### 중요 파일 별도 백업
+- `CLAUDE.md`: 프로젝트 가이드 (항상 최신 유지)
+- `.gitignore`: ignore 규칙
+- `README.md`: 프로젝트 소개
+
 ## GitHub 버전 관리 전략
 
 ### 저장소 구조
