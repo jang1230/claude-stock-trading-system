@@ -1,0 +1,918 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 시스템 - 사용자 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* 네비게이션 바 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .navbar .logo {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+
+            .navbar .user-info {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                color: #2c3e50;
+            }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+            .logout-btn:hover {
+                background: #c0392b;
+                transform: translateY(-1px);
+            }
+
+        /* 메인 컨테이너 */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* 사이드바 */
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar ul {
+                list-style: none;
+            }
+
+            .sidebar li {
+                margin: 5px 0;
+            }
+
+            .sidebar a {
+                display: block;
+                padding: 15px 30px;
+                color: #2c3e50;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                border-left: 4px solid transparent;
+            }
+
+                .sidebar a:hover, .sidebar a.active {
+                    background: rgba(102, 126, 234, 0.1);
+                    border-left-color: #667eea;
+                    color: #667eea;
+                }
+
+        /* 메인 콘텐츠 */
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        /* 로그인 화면 */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+            .login-card h1 {
+                text-align: center;
+                color: #2c3e50;
+                margin-bottom: 30px;
+                font-size: 2em;
+            }
+
+            .login-card .subtitle {
+                text-align: center;
+                color: #7f8c8d;
+                margin-bottom: 30px;
+            }
+
+        /* 카드 스타일 */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+            .card h2 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                font-size: 1.5em;
+            }
+
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .form-group input, .form-group select {
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                font-size: 1em;
+                transition: all 0.3s ease;
+                background: rgba(255, 255, 255, 0.9);
+            }
+
+                .form-group input:focus, .form-group select:focus {
+                    outline: none;
+                    border-color: #667eea;
+                    box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+                }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 버튼 스타일 */
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            }
+
+            .btn:active {
+                transform: translateY(0);
+            }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+            .btn-secondary:hover {
+                background: #5a6268;
+            }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+            .btn-danger:hover {
+                background: #c0392b;
+            }
+
+        /* 테이블 스타일 */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        /* 통계 카드 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+            .stat-card .number {
+                font-size: 2.5em;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .stat-card .label {
+                opacity: 0.9;
+                font-size: 1.1em;
+            }
+
+        /* 알림 메시지 */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .alert.success {
+                background: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+
+            .alert.error {
+                background: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+            }
+
+            .alert.show {
+                display: flex;
+            }
+
+        /* 로딩 상태 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 숨김 클래스 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 20px 0;
+            }
+
+                .sidebar ul {
+                    display: flex;
+                    overflow-x: auto;
+                }
+
+                .sidebar li {
+                    margin: 0 5px;
+                    white-space: nowrap;
+                }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <h1>🛡️ 관리자 시스템</h1>
+            <p class="subtitle">사용자 계정 관리</p>
+
+            <div id="loginAlert" class="alert"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="adminEmail">관리자 이메일</label>
+                    <input type="email" id="adminEmail" name="adminEmail" value="admin@company.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">비밀번호</label>
+                    <input type="password" id="adminPassword" name="adminPassword" value="admin123" required>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%;">
+                    <span id="loginBtnText">로그인</span>
+                    <div id="loginLoading" class="loading hidden"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 메인 관리자 화면 -->
+    <div id="adminScreen" class="hidden">
+        <!-- 네비게이션 -->
+        <nav class="navbar">
+            <div class="logo">관리자 시스템</div>
+            <div class="user-info">
+                <span>환영합니다, <strong id="currentAdmin"></strong></span>
+                <button class="logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+        </nav>
+
+        <div class="main-container">
+            <!-- 사이드바 -->
+            <aside class="sidebar">
+                <ul>
+                    <li><a href="#" class="active" onclick="showSection('dashboard')">📊 대시보드</a></li>
+                    <li><a href="#" onclick="showSection('users')">👥 사용자 관리</a></li>
+                    <li><a href="#" onclick="showSection('addUser')">➕ 사용자 추가</a></li>
+                </ul>
+            </aside>
+
+            <!-- 메인 콘텐츠 -->
+            <main class="content">
+                <!-- 대시보드 -->
+                <section id="dashboardSection">
+                    <h1>📊 대시보드</h1>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" id="totalUsers">0</div>
+                            <div class="label">총 사용자 수</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="activeUsers">0</div>
+                            <div class="label">활성 사용자</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="todayRegistered">0</div>
+                            <div class="label">오늘 등록</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>최근 등록된 사용자</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>이메일</th>
+                                        <th>등록일</th>
+                                        <th>상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentUsersTable">
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: #7f8c8d;">로딩 중...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 사용자 관리 -->
+                <section id="usersSection" class="hidden">
+                    <h1>👥 사용자 관리</h1>
+
+                    <div id="usersAlert" class="alert"></div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>등록된 사용자 목록</h2>
+                            <button class="btn" onclick="loadUsers()">🔄 새로고침</button>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>이메일</th>
+                                        <th>계좌번호</th>
+                                        <th>계좌유형</th>
+                                        <th>승인상태</th>
+                                        <th>등록일</th>
+                                        <th>상태</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; color: #7f8c8d;">로딩 중...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 사용자 추가 -->
+                <section id="addUserSection" class="hidden">
+                    <h1>➕ 새 사용자 추가</h1>
+
+                    <div id="addUserAlert" class="alert"></div>
+
+                    <div class="card">
+                        <h2>사용자 정보 입력</h2>
+
+                        <form id="addUserForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newUserEmail">이메일 주소</label>
+                                    <input type="email" id="newUserEmail" name="newUserEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newUserPassword">비밀번호</label>
+                                    <input type="password" id="newUserPassword" name="newUserPassword" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newUserAccount">계좌번호 (선택사항)</label>
+                                    <input type="text" id="newUserAccount" name="newUserAccount"
+                                           placeholder="예: 5012345678 (실계좌) 또는 8012345678 (모의투자)"
+                                           maxlength="10" pattern="[58][0-9]{9}">
+                                    <small style="color: #7f8c8d;">실계좌는 5로 시작, 모의투자는 8로 시작 (10자리)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="accountVerified">계좌 승인</label>
+                                    <select id="accountVerified" name="accountVerified">
+                                        <option value="false">미승인</option>
+                                        <option value="true">승인</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn">
+                                <span id="addUserBtnText">사용자 추가</span>
+                                <div id="addUserLoading" class="loading hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentAdminId = null;
+        let currentAdminEmail = null;
+        const API_BASE_URL = 'https://localhost:44309';
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 폼 이벤트
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('addUserForm').addEventListener('submit', handleAddUser);
+
+            // 초기 화면 설정
+            showLoginScreen();
+        });
+
+        // 로그인 처리
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            setLoginLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentAdminId = data.adminId;
+                    currentAdminEmail = data.email;
+                    showAdminScreen();
+                    loadDashboard();
+                } else {
+                    showAlert('loginAlert', data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('loginAlert', '로그인 중 오류가 발생했습니다.', 'error');
+            } finally {
+                setLoginLoading(false);
+            }
+        }
+
+        // 사용자 추가 처리
+        async function handleAddUser(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const accountNumber = document.getElementById('newUserAccount').value.trim();
+            const accountVerified = document.getElementById('accountVerified').value === 'true';
+
+            setAddUserLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/user/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        adminId: currentAdminId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 사용자 등록 성공 후 계좌 정보가 있으면 업데이트
+                    if (accountNumber) {
+                        await updateUserAccount(data.userId, accountNumber, accountVerified);
+                    }
+
+                    showAlert('addUserAlert', `사용자 ${email}이 성공적으로 추가되었습니다.`, 'success');
+                    document.getElementById('addUserForm').reset();
+                    loadUsers();
+                    updateDashboardStats();
+                } else {
+                    showAlert('addUserAlert', data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('addUserAlert', '사용자 추가 중 오류가 발생했습니다.', 'error');
+            } finally {
+                setAddUserLoading(false);
+            }
+        }
+
+        // 사용자 목록 로드
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/users`);
+                const users = await response.json();
+
+                if (response.ok) {
+                    displayUsers(users);
+                } else {
+                    showAlert('usersAlert', '사용자 목록을 불러올 수 없습니다.', 'error');
+                }
+            } catch (error) {
+                showAlert('usersAlert', '사용자 목록 로딩 중 오류가 발생했습니다.', 'error');
+            }
+        }
+        // 계좌 정보 업데이트 함수 (새로 추가)
+        async function updateUserAccount(userId, accountNumber, accountVerified) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/admin/user/${userId}/account`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accountNumber: accountNumber,
+                        accountVerified: accountVerified
+                    })
+                });
+
+                return response.ok;
+            } catch (error) {
+                console.error('계좌 정보 업데이트 오류:', error);
+                return false;
+            }
+        }
+
+        // 사용자 목록 표시
+        function displayUsers(users) {
+            const tableBody = document.getElementById('usersTable');
+
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #7f8c8d;">등록된 사용자가 없습니다.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.id}</td>
+            <td>${user.email}</td>
+            <td>${user.accountNumber || '미등록'}</td>
+            <td>
+                ${user.accountNumber ?
+                    (user.accountNumber.startsWith('5') ?
+                        '<span style="color: #e74c3c;">실계좌</span>' :
+                        '<span style="color: #27ae60;">모의투자</span>')
+                    : '-'}
+            </td>
+            <td>
+                ${user.accountNumber ?
+                    (user.accountVerified ?
+                        '<span style="color: #27ae60;">승인</span>' :
+                        '<span style="color: #f39c12;">미승인</span>')
+                    : '-'}
+            </td>
+            <td>${user.createdAt}</td>
+            <td><span style="color: #27ae60;">활성</span></td>
+            <td>
+                <button class="btn btn-secondary" onclick="editUser(${user.id})" style="padding: 5px 10px; font-size: 0.8em; margin-right: 5px;">
+                    수정
+                </button>
+                <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.email}')" style="padding: 5px 10px; font-size: 0.8em;">
+                    삭제
+                </button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        async function editUser(userId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/user/${userId}/account`);
+                const userData = await response.json();
+
+                if (response.ok) {
+                    const accountNumber = prompt('계좌번호를 입력하세요 (빈 값으로 두면 삭제):', userData.accountNumber || '');
+
+                    if (accountNumber !== null) { // 취소하지 않은 경우
+                        const verified = confirm('이 계좌를 승인하시겠습니까?');
+
+                        await updateUserAccount(userId, accountNumber, verified);
+                        showAlert('usersAlert', '사용자 정보가 업데이트되었습니다.', 'success');
+                        loadUsers();
+                    }
+                }
+            } catch (error) {
+                showAlert('usersAlert', '사용자 정보 로딩 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 사용자 삭제
+        async function deleteUser(userId, userEmail) {
+            if (!confirm(`정말로 사용자 "${userEmail}"을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/user/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('usersAlert', `사용자 ${userEmail}이 삭제되었습니다.`, 'success');
+                    loadUsers();
+                    updateDashboardStats();
+                } else {
+                    showAlert('usersAlert', data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('usersAlert', '사용자 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 대시보드 로드
+        async function loadDashboard() {
+            await loadUsers();
+            await updateDashboardStats();
+            displayRecentUsers();
+        }
+
+        // 대시보드 통계 업데이트
+        async function updateDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/users`);
+                const users = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('totalUsers').textContent = users.length;
+                    document.getElementById('activeUsers').textContent = users.length;
+
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayUsers = users.filter(user => user.createdAt === today);
+                    document.getElementById('todayRegistered').textContent = todayUsers.length;
+                }
+            } catch (error) {
+                console.error('통계 업데이트 오류:', error);
+            }
+        }
+
+        // 최근 사용자 표시
+        async function displayRecentUsers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Auth/users`);
+                const users = await response.json();
+
+                if (response.ok) {
+                    const recentUsers = users.slice(-5).reverse(); // 최근 5명
+                    const tableBody = document.getElementById('recentUsersTable');
+
+                    if (recentUsers.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #7f8c8d;">등록된 사용자가 없습니다.</td></tr>';
+                        return;
+                    }
+
+                    tableBody.innerHTML = recentUsers.map(user => `
+                        <tr>
+                            <td>${user.email}</td>
+                            <td>${user.createdAt}</td>
+                            <td><span style="color: #27ae60;">활성</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('최근 사용자 로딩 오류:', error);
+            }
+        }
+
+        // 섹션 표시
+        function showSection(sectionName) {
+            // 모든 섹션 숨기기
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('usersSection').classList.add('hidden');
+            document.getElementById('addUserSection').classList.add('hidden');
+
+            // 활성 링크 제거
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 선택된 섹션 표시
+            document.getElementById(sectionName + 'Section').classList.remove('hidden');
+
+            // 활성 링크 설정
+            event.target.classList.add('active');
+
+            // 섹션별 데이터 로드
+            if (sectionName === 'users') {
+                loadUsers();
+            } else if (sectionName === 'dashboard') {
+                loadDashboard();
+            }
+        }
+
+        // 화면 전환
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
+        }
+
+        function showAdminScreen() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.remove('hidden');
+            document.getElementById('currentAdmin').textContent = currentAdminEmail;
+        }
+
+        // 로그아웃
+        function logout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                currentAdminId = null;
+                currentAdminEmail = null;
+                showLoginScreen();
+
+                // 폼 초기화
+                document.getElementById('loginForm').reset();
+                document.getElementById('addUserForm').reset();
+
+                // 알림 숨기기
+                hideAllAlerts();
+            }
+        }
+
+        // 유틸리티 함수들
+        function showAlert(alertId, message, type) {
+            const alertElement = document.getElementById(alertId);
+            alertElement.textContent = message;
+            alertElement.className = `alert ${type} show`;
+
+            setTimeout(() => {
+                alertElement.classList.remove('show');
+            }, 5000);
+        }
+
+        function hideAllAlerts() {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+            });
+        }
+
+        function setLoginLoading(isLoading) {
+            const btnText = document.getElementById('loginBtnText');
+            const loading = document.getElementById('loginLoading');
+            const btn = document.querySelector('#loginForm button');
+
+            if (isLoading) {
+                btnText.classList.add('hidden');
+                loading.classList.remove('hidden');
+                btn.disabled = true;
+            } else {
+                btnText.classList.remove('hidden');
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function setAddUserLoading(isLoading) {
+            const btnText = document.getElementById('addUserBtnText');
+            const loading = document.getElementById('addUserLoading');
+            const btn = document.querySelector('#addUserForm button');
+
+            if (isLoading) {
+                btnText.classList.add('hidden');
+                loading.classList.remove('hidden');
+                btn.disabled = true;
+            } else {
+                btnText.classList.remove('hidden');
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

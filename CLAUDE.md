@@ -1,0 +1,277 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 프로젝트 개요
+
+이 프로젝트는 **C# 주식 자동매매 시스템**을 **Python으로 변환**하는 작업입니다.
+
+### 현재 시스템 구성
+- **웹 관리 시스템** (`claude/UserManagementSystem/`): ASP.NET Core Web API
+- **데스크톱 자동매매 앱** (`claude2/`): C# Windows Forms + 키움 OpenAPI
+
+### 변환 목표
+- C# → Python 완전 변환
+- 기능과 UI 레이아웃 최대한 유지
+- 안정적이고 점진적인 변환 진행
+
+## 변환 전략 및 순서
+
+### 1단계: C#에서 UI 개선 (현재 단계)
+- 기존 Windows Forms UI 완성
+- 사용자 경험 개선
+- 레이아웃 및 기능 최적화
+
+### 2단계: 데이터베이스 모델 변환
+- C# Entity Framework → Python SQLAlchemy
+- User, Admin 모델 변환
+- 데이터베이스 스키마 유지
+
+### 3단계: 웹 API 서버 변환
+- ASP.NET Core → FastAPI
+- AuthController → FastAPI 라우터
+- BCrypt 인증 시스템 유지
+
+### 4단계: 데이터 모델 클래스 변환
+- MyTradingCondition, MyTradingItem 등
+- C# 클래스 → Python 클래스 (dataclass 사용)
+
+### 5단계: 비즈니스 로직 변환
+- LoginManager, TradingManager 등
+- 키움 OpenAPI → pykiwoom 라이브러리
+
+### 6단계: UI 레이아웃 변환
+- Windows Forms → PyQt5/6
+- 90% 유사한 외관 목표
+- 기존 사용자 경험 유지
+
+## 기술 스택
+
+### 현재 (C#)
+- **Backend**: ASP.NET Core 5.0, Entity Framework Core, SQL Server
+- **Frontend**: Windows Forms, 키움 OpenAPI
+- **인증**: BCrypt.NET
+- **IDE**: Visual Studio 2019
+
+### 변환 후 (Python)
+- **Backend**: FastAPI, SQLAlchemy, PostgreSQL/MySQL
+- **Frontend**: PyQt5/6, pykiwoom
+- **인증**: bcrypt (Python)
+- **IDE**: VS Code, PyCharm
+
+## 필요한 Python 라이브러리
+
+### 웹 API 서버용
+```
+fastapi==0.104.1
+sqlalchemy==2.0.21
+bcrypt==4.0.1
+uvicorn==0.24.0
+psycopg2-binary==2.9.7
+```
+
+### 데스크톱 앱용
+```
+PyQt5==5.15.9
+pykiwoom==0.5.4
+requests==2.31.0
+pandas==2.1.3
+numpy==1.25.2
+```
+
+## 핵심 파일 구조
+
+### 웹 관리 시스템 (claude/UserManagementSystem/)
+```
+Controllers/AuthController.cs     → FastAPI 라우터로 변환
+Models/User.cs, Admin.cs         → SQLAlchemy 모델로 변환
+admin.html                       → Vue.js/React 또는 Jinja2 템플릿
+```
+
+### 자동매매 앱 (claude2/)
+```
+MainForm.cs                      → PyQt MainWindow
+TradingManager.cs                → Python 클래스 (pykiwoom 사용)
+LoginManager.cs                  → Python 클래스
+MyTradingCondition.cs            → Python dataclass
+UserLoginForm.cs                 → PyQt Dialog
+```
+
+## 주요 기능
+
+### 인증 시스템
+- 관리자 웹 로그인
+- 사용자 Windows Forms 로그인
+- 계좌 권한 관리 (실계좌/모의투자)
+
+### 자동매매 시스템
+- 키움 OpenAPI 연동
+- 조건식 기반 매매
+- 실시간 시세 모니터링
+- 손익 계산 및 리스크 관리
+
+### 웹 관리 기능
+- 사용자 등록/삭제
+- 계좌 승인/거부
+- 매매 현황 모니터링
+
+## 개발 환경 설정
+
+### C# 개발 환경
+```bash
+# Visual Studio 2019 이상
+# SQL Server Express LocalDB
+# .NET Framework 4.7.2 이상
+# 키움 OpenAPI+ 설치
+```
+
+### Python 개발 환경 (변환 후)
+```bash
+# Python 3.9 이상
+# pip install -r requirements.txt
+# PyQt5 Designer (UI 편집용)
+# 키움 OpenAPI+ 설치 (Windows 필수)
+```
+
+## 중요 고려사항
+
+### 키움 OpenAPI 제약
+- Windows 전용 (Wine 등으로 Linux 사용 가능하나 불안정)
+- COM 인터페이스 → pykiwoom 래퍼 사용
+- 실시간 데이터 처리 방식 차이
+
+### UI 프레임워크 선택
+- **PyQt5/6 권장**: 90% 유사한 외관 가능
+- Tkinter 대안: 70% 유사, 더 간단
+
+### 데이터베이스 마이그레이션
+- SQL Server → PostgreSQL/MySQL 권장
+- 스키마 구조 동일하게 유지
+- 데이터 마이그레이션 스크립트 필요
+
+## 테스트 계정
+
+### 관리자 계정
+- Email: admin@company.com
+- Password: admin123
+
+### 테스트 사용자
+- Email: test@example.com  
+- Password: password123
+
+## 실행 방법
+
+### 현재 C# 시스템
+1. UserManagementSystem API 서버 실행 (F5)
+2. admin.html 브라우저에서 열기
+3. StockAutoTrade2 Windows Forms 실행 (F5)
+
+### 변환 후 Python 시스템 (예정)
+1. `uvicorn main:app --reload` (FastAPI 서버)
+2. 웹 브라우저에서 관리 페이지 접속
+3. `python main.py` (PyQt 자동매매 앱)
+
+## 향후 개선 계획
+
+### 단기 목표
+- [ ] C# UI 개선 완료
+- [ ] 데이터베이스 모델 Python 변환
+- [ ] 웹 API FastAPI 변환
+
+### 중기 목표  
+- [ ] 비즈니스 로직 Python 변환
+- [ ] PyQt UI 구현
+- [ ] 통합 테스트 완료
+
+### 장기 목표
+- [ ] 성능 최적화
+- [ ] 추가 기능 개발
+- [ ] 클라우드 배포 지원
+
+## 개발 팁
+
+### C# → Python 변환 시 주의사항
+- 이벤트 기반 프로그래밍 → 콜백/async 패턴
+- LINQ → list comprehension/pandas
+- Timer → threading.Timer/asyncio
+- DataGridView → QTableWidget
+
+### 코딩 컨벤션
+- Python PEP 8 스타일 가이드 준수
+- 클래스명: PascalCase → snake_case
+- 메서드명: camelCase → snake_case
+
+### 디버깅 도구
+- C#: Visual Studio Debugger
+- Python: PyCharm Debugger, pdb
+
+## GitHub 버전 관리 전략
+
+### 저장소 구조
+- **메인 저장소**: claude-stock-trading-system
+- **브랜치 전략**: GitFlow 기반
+- **이슈 관리**: GitHub Issues + Projects 활용
+
+### 브랜치 전략
+```
+main                    # 안정된 프로덕션 코드
+├── develop            # 개발 통합 브랜치
+├── feature/python-conversion    # Python 변환 작업
+├── feature/ui-improvement      # UI 개선 작업
+├── bugfix/login-issue         # 버그 수정
+└── release/v1.0              # 릴리스 준비
+```
+
+### 커밋 메시지 컨벤션
+```
+feat: 새 기능 추가
+fix: 버그 수정  
+refactor: 코드 리팩토링
+docs: 문서 업데이트
+test: 테스트 추가/수정
+style: 코드 스타일 수정
+chore: 빌드 설정 등 기타 작업
+```
+
+### 프로젝트 설정 체크리스트
+- [ ] GitHub 저장소 생성
+- [ ] .gitignore 파일 설정 (C#/Python 통합)
+- [ ] README.md 작성
+- [ ] CONTRIBUTING.md 가이드라인
+- [ ] GitHub Actions CI/CD 설정
+- [ ] 브랜치 보호 규칙 설정
+
+### GitHub 워크플로우
+1. **이슈 생성**: 작업 전 GitHub Issue 생성
+2. **브랜치 생성**: feature/이슈번호-설명 형태
+3. **개발 진행**: 커밋 메시지 컨벤션 준수
+4. **Pull Request**: 코드 리뷰 및 테스트
+5. **머지**: develop → main 순차 진행
+
+### 필수 파일들
+```
+.gitignore              # C#/Python 통합 ignore 규칙
+README.md              # 프로젝트 소개 및 설치 가이드
+CONTRIBUTING.md        # 기여 가이드라인
+docs/                  # 추가 문서
+├── api-docs.md        # API 문서
+├── deployment.md      # 배포 가이드
+└── troubleshooting.md # 문제 해결 가이드
+```
+
+## 연락처 및 문서
+
+### 참고 문서
+- C# 기존 프로젝트 설명: `c# 홈페이지및 데이터베이스.txt`
+- 자동매매 시스템 가이드: `c# 자동매매프로그램.txt`
+- 키움 OpenAPI 개발가이드: https://www.kiwoom.com/
+- pykiwoom 문서: https://github.com/pykiwoom/pykiwoom
+
+### 변환 진행 상황
+- **현재 단계**: C# 코드 분석 완료, UI 개선 준비 중
+- **다음 단계**: UI 개선 후 Python 데이터베이스 모델 변환
+- **예상 완료**: 단계별 진행 (약 2-3개월 소요 예상)
+
+---
+
+*이 문서는 C# → Python 변환 프로젝트의 전체 가이드입니다. 새로운 Claude 세션에서 이 문서를 참조하여 프로젝트 상황을 빠르게 파악할 수 있습니다.*

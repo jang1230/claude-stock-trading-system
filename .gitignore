@@ -1,0 +1,66 @@
+# C# 관련
+*.exe
+*.dll
+*.pdb
+bin/
+obj/
+packages/
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE 관련
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS 관련
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 프로젝트 특화
+*.config
+appsettings.json
+appsettings.Development.json
+*.log
+*.tmp
+
+# 키움 API 관련
+*.ocx
+KOA_Studio/
+
+# 데이터베이스
+*.mdf
+*.ldf
+*.db
+*.sqlite3
+
+# 빌드 결과물
+dist/
+build/
+*.egg-info/
+
+# Node.js 관련
+node_modules/
+package-lock.json
+*.deb
+
+# 임시 파일
+gh.deb

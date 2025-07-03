@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.34601.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockAutoTrade2", "StockAutoTrade2.csproj", "{3068CD54-1683-440C-B1ED-C2413C61600B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3068CD54-1683-440C-B1ED-C2413C61600B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3068CD54-1683-440C-B1ED-C2413C61600B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3068CD54-1683-440C-B1ED-C2413C61600B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3068CD54-1683-440C-B1ED-C2413C61600B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {63C0C4D8-75FF-4E58-8754-AF8ED1DD1842}
+	EndGlobalSection
+EndGlobal

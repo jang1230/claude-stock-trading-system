@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3068CD54-1683-440C-B1ED-C2413C61600B}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>StockAutoTrade1</RootNamespace>
+    <AssemblyName>StockAutoTrade1</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConditionData.cs" />
+    <Compile Include="ConditionLoadDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConditionLoadDialog.Designer.cs">
+      <DependentUpon>ConditionLoadDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConditionSettingDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConditionSettingDialog.Designer.cs">
+      <DependentUpon>ConditionSettingDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EtcData.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="FileIO.cs" />
+    <Compile Include="EntireLog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EntireLog.Designer.cs">
+      <DependentUpon>EntireLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HoldingItemSettingDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HoldingItemSettingDialog.Designer.cs">
+      <DependentUpon>HoldingItemSettingDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LoginManager.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyHoldingItem.cs" />
+    <Compile Include="MyHoldingItemOption.cs" />
+    <Compile Include="MyTradingCondition.cs" />
+    <Compile Include="MyTradingItem.cs" />
+    <Compile Include="OrderRequestManager.cs" />
+    <Compile Include="ProfitLossDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProfitLossDialog.Designer.cs">
+      <DependentUpon>ProfitLossDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CheckRequestManager.cs" />
+    <Compile Include="TradingManager.cs" />
+    <Compile Include="UserAuthManager.cs" />
+    <Compile Include="UserLoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UserLoginForm.Designer.cs">
+      <DependentUpon>UserLoginForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="ConditionLoadDialog.resx">
+      <DependentUpon>ConditionLoadDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConditionSettingDialog.resx">
+      <DependentUpon>ConditionSettingDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EntireLog.resx">
+      <DependentUpon>EntireLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HoldingItemSettingDialog.resx">
+      <DependentUpon>HoldingItemSettingDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProfitLossDialog.resx">
+      <DependentUpon>ProfitLossDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="AxKHOpenAPILib">
+      <Guid>{6D8C2B4D-EF41-4750-8AD4-C299033833FB}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>2</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="KHOpenAPILib">
+      <Guid>{6D8C2B4D-EF41-4750-8AD4-C299033833FB}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>2</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+            .test-section h3 {
+                color: #333;
+                margin-top: 0;
+            }
+
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 UserManagement API 테스트</h1>
+        <p><strong>API 서버 주소:</strong> <span id="apiUrl">https://localhost:44309</span></p>
+        <input type="text" id="baseUrl" placeholder="API 서버 주소 (예: https://localhost:44309)" value="https://localhost:44309">
+    </div>
+
+    <!-- 관리자 생성 테스트 (맨 위에 추가) -->
+    <div class="container">
+        <div class="test-section">
+            <h3>0️⃣ 관리자 계정 생성</h3>
+            <input type="email" id="createAdminEmail" placeholder="관리자 이메일" value="admin@company.com">
+            <input type="password" id="createAdminPassword" placeholder="관리자 비밀번호" value="admin123">
+            <button onclick="createAdmin()">관리자 계정 생성</button>
+            <div id="createAdminResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 관리자 로그인 테스트 -->
+    <div class="container">
+        <div class="test-section">
+            <h3>1️⃣ 관리자 로그인 테스트</h3>
+            <input type="email" id="adminEmail" placeholder="관리자 이메일" value="admin@company.com">
+            <input type="password" id="adminPassword" placeholder="관리자 비밀번호" value="admin123">
+            <button onclick="testAdminLogin()">관리자 로그인 테스트</button>
+            <div id="adminLoginResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 사용자 등록 테스트 -->
+    <div class="container">
+        <div class="test-section">
+            <h3>2️⃣ 새 사용자 등록 테스트</h3>
+            <input type="email" id="newUserEmail" placeholder="새 사용자 이메일" value="test@example.com">
+            <input type="password" id="newUserPassword" placeholder="새 사용자 비밀번호" value="password123">
+            <input type="number" id="adminId" placeholder="관리자 ID" value="4">
+            <button onclick="testUserRegister()">사용자 등록 테스트</button>
+            <div id="userRegisterResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 사용자 목록 조회 테스트 -->
+    <div class="container">
+        <div class="test-section">
+            <h3>3️⃣ 사용자 목록 조회 테스트</h3>
+            <button onclick="testGetUsers()">사용자 목록 조회</button>
+            <div id="getUsersResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 사용자 로그인 테스트 -->
+    <div class="container">
+        <div class="test-section">
+            <h3>4️⃣ 사용자 로그인 테스트 (Windows Forms용)</h3>
+            <input type="email" id="userEmail" placeholder="사용자 이메일" value="test@example.com">
+            <input type="password" id="userPassword" placeholder="사용자 비밀번호" value="password123">
+            <button onclick="testUserLogin()">사용자 로그인 테스트</button>
+            <div id="userLoginResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function getBaseUrl() {
+            return document.getElementById('baseUrl').value || 'https://localhost:44309';
+        }
+
+        function showResult(elementId, message, isSuccess = true, isInfo = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.textContent = message;
+            element.className = `result ${isInfo ? 'info' : (isSuccess ? 'success' : 'error')}`;
+        }
+
+        async function testAdminLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            showResult('adminLoginResult', '🔄 로그인 중...', true, true);
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/Auth/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('adminLoginResult', `✅ 성공!\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    showResult('adminLoginResult', `❌ 실패!\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                showResult('adminLoginResult', `❌ 오류 발생!\n${error.message}`, false);
+            }
+        }
+
+        async function testUserRegister() {
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const adminId = parseInt(document.getElementById('adminId').value);
+
+            showResult('userRegisterResult', '🔄 등록 중...', true, true);
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/Auth/user/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password, adminId })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('userRegisterResult', `✅ 성공!\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    showResult('userRegisterResult', `❌ 실패!\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                showResult('userRegisterResult', `❌ 오류 발생!\n${error.message}`, false);
+            }
+        }
+
+        async function testGetUsers() {
+            showResult('getUsersResult', '🔄 조회 중...', true, true);
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/Auth/users`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('getUsersResult', `✅ 성공!\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    showResult('getUsersResult', `❌ 실패!\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                showResult('getUsersResult', `❌ 오류 발생!\n${error.message}`, false);
+            }
+        }
+
+        async function testUserLogin() {
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+
+            showResult('userLoginResult', '🔄 로그인 중...', true, true);
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/Auth/user/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('userLoginResult', `✅ 성공!\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    showResult('userLoginResult', `❌ 실패!\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                showResult('userLoginResult', `❌ 오류 발생!\n${error.message}`, false);
+            }
+        }
+
+        // 페이지 로드 시 현재 서버 상태 확인
+        window.onload = function () {
+            console.log('API 테스트 페이지가 로드되었습니다.');
+            console.log('먼저 Visual Studio에서 API 서버를 실행하세요!');
+        };
+
+        async function createAdmin() {
+            const email = document.getElementById('createAdminEmail').value;
+            const password = document.getElementById('createAdminPassword').value;
+
+            showResult('createAdminResult', '🔄 관리자 생성 중...', true, true);
+
+            try {
+                const response = await fetch(`${getBaseUrl()}/api/Auth/admin/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('createAdminResult', `✅ 성공!\n${JSON.stringify(data, null, 2)}`, true);
+                } else {
+                    showResult('createAdminResult', `❌ 실패!\n${JSON.stringify(data, null, 2)}`, false);
+                }
+            } catch (error) {
+                showResult('createAdminResult', `❌ 오류 발생!\n${error.message}`, false);
+            }
+        }
+
+    </script>
+</body>
+</html>

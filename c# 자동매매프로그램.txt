@@ -1,0 +1,710 @@
+# 주식 자동매매 프로그램 완전 가이드 📊
+
+## 📚 프로그램 개요
+
+**프로그램명**: StockAutoTrade2 - 조건식 기반 주식 자동매매 시스템
+**목적**: 키움증권 OpenAPI를 활용한 조건식 기반 주식 자동매매
+**개발환경**: C# Windows Forms (.NET Framework), Visual Studio 2019
+
+---
+
+## 🏗️ 시스템 아키텍처
+
+### 📋 **전체 구조**
+```
+[사용자 인증] → [키움 API 로그인] → [조건식 설정] → [자동매매 실행]
+       ↓              ↓                ↓              ↓
+[UserLoginForm] → [LoginManager] → [ConditionSetting] → [TradingManager]
+```
+
+### 🔄 **실행 흐름**
+1. **사용자 인증** (UserLoginForm) - API 서버 인증
+2. **키움 API 로그인** (LoginManager) - 키움증권 서버 연결
+3. **조건식 설정** (ConditionSettingDialog) - 매매 전략 설정
+4. **자동매매 실행** (TradingManager) - 실시간 매매 수행
+5. **모니터링** (MainForm) - 실시간 현황 확인
+
+---
+
+## 📁 프로젝트 구조
+
+### 🗂️ **핵심 파일 구조**
+```
+StockAutoTrade2/
+├── Core Classes/
+│   ├── MainForm.cs                    (메인 화면 및 전체 제어)
+│   ├── LoginManager.cs               (키움 API 로그인 관리)
+│   ├── TradingManager.cs             (매매 로직 관리)
+│   ├── UserAuthManager.cs            (사용자 인증 관리)
+│   └── UserLoginForm.cs              (사용자 로그인 화면)
+├── Trading Models/
+│   ├── MyTradingCondition.cs         (매매 조건식 모델)
+│   ├── MyTradingItem.cs              (매매 종목 모델)
+│   ├── ConditionData.cs              (조건식 데이터)
+│   └── GoJumMedo.cs                  (고점/매도 관리)
+├── Request Managers/
+│   ├── CheckRequestManager.cs        (조회 요청 관리)
+│   └── OrderRequestManager.cs        (주문 요청 관리)
+├── Dialog Windows/
+│   ├── ConditionSettingDialog.cs     (조건식 설정 창)
+│   ├── ProfitLossDialog.cs           (손익 현황 창)
+│   ├── HoldingItemSettingDialog.cs   (보유종목 설정 창)
+│   └── EntireLog.cs                  (전체 로그 창)
+└── Data Models/
+    ├── MyHoldingItemOption.cs        (보유종목 옵션)
+    ├── PassitiveBuyingItem.cs        (수동 매수 항목)
+    └── ProfitLossCalculate.cs        (손익 계산)
+```
+
+---
+
+## 🔑 핵심 클래스 상세 분석
+
+### 1️⃣ **MainForm.cs - 메인 제어 클래스**
+
+#### 🎯 **주요 역할**
+- 전체 프로그램의 중앙 제어
+- UI 화면 관리
+- 각종 매니저 클래스 인스턴스 관리
+- 실시간 데이터 표시
+
+#### 📊 **핵심 변수들**
+```csharp
+public class MainForm : Form
+{
+    // 싱글톤 인스턴스
+    private static MainForm gMainForm;
+    
+    // 매니저 클래스들
+    public LoginManager gLoginInstance;          // 로그인 관리
+    public TradingManager gTradingManager;       // 매매 관리
+    
+    // 키움 API 관련
+    public string sServerGubun;                  // 서버구분 (실서버/모의투자)
+    
+    // 조건식 관리
+    public List<ConditionData> conditionDataList;              // 조건식 목록
+    public List<MyTradingCondition> gMyTradingConditionList;   // 내 매매조건식
+    
+    // 종목 관리
+    public List<MyHoldingItemOption> gMyHoldingItemOptionList; // 보유종목
+    public List<PassitiveBuyingItem> gMyPassitiveBuyingItemList; // 수동매수종목
+    
+    // 요청 관리
+    public CheckRequestManager gCheckRequestManager;   // 조회요청 매니저
+    public OrderRequestManager gOrderRequestManager;   // 주문요청 매니저
+    
+    // 화면 관리
+    private int screenNum;                      // 화면 번호 (1000번부터)
+    public bool[] bConditionSNUserOrNot;       // 조건식 스크린번호 사용여부
+    
+    // 자금 관리
+    public long curOrderAmount;                 // 현재 예수금
+}
+```
+
+#### 🎮 **주요 메서드들**
+```csharp
+// 인스턴스 관리
+public static MainForm GetInstance()            // 싱글톤 인스턴스 반환
+
+// 로그 관리
+public void setLogText(string log)             // 로그 출력
+public void LogListBoxDrawItemEvent()          // 로그 색상 처리
+
+// 데이터그리드 관리
+public void AddmyTradingConditionToDataGridView()  // 조건식 표시
+public void AddMyTradingItemToDataGridView()       // 매매종목 표시
+
+// 화면 번호 관리
+public int GetScreenNumber()                   // 화면번호 생성
+public void setConditionListCreateCheck()     // 조건식 스크린번호 관리
+```
+
+---
+
+### 2️⃣ **LoginManager.cs - 키움 API 로그인 관리**
+
+#### 🎯 **주요 역할**
+- 키움증권 OpenAPI 로그인 처리
+- 계좌 정보 수집
+- 조건식 목록 수집
+- 서버 구분 (실서버/모의투자) 확인
+
+#### 🔑 **핵심 메서드들**
+```csharp
+public class LoginManager
+{
+    // 키움 서버 로그인
+    public void KiWoomServerLogin()
+    {
+        if (gMainForm.KiwoomAPI.GetConnectState() == 0)
+        {
+            gMainForm.KiwoomAPI.CommConnect();  // 로그인 창 출력
+        }
+    }
+    
+    // 로그인 이벤트 처리
+    private void onKiWoomLoginEvent(sender, e)
+    {
+        if (e.nErrCode == 0) // 로그인 성공
+        {
+            // 서버 구분 확인
+            sServerGubun = KiwoomAPI.GetLoginInfo("GetServerGubun");
+            
+            // 계좌 목록 수집
+            string accountList = KiwoomAPI.GetLoginInfo("ACCLIST");
+            
+            // 조건식 목록 요청
+            KiwoomAPI.GetConditionLoad();
+            
+            // 예수금 정보 요청
+            getAccountDetailDataTR(account);
+        }
+    }
+    
+    // 조건식 수신 이벤트
+    private void onReceiveConditionListEvent(sender, e)
+    {
+        string conditionData = KiwoomAPI.GetConditionNameList();
+        // 조건식 파싱 및 저장
+    }
+}
+```
+
+---
+
+### 3️⃣ **TradingManager.cs - 매매 로직 관리**
+
+#### 🎯 **주요 역할**
+- 실시간 매매 로직 수행
+- 키움 API 이벤트 처리
+- 주문 접수 및 체결 관리
+- 실시간 시세 모니터링
+
+#### 📡 **키움 API 이벤트 핸들러들**
+```csharp
+public class TradingManager
+{
+    // TR 데이터 수신 (조회 결과)
+    public void OnReceiveTrData(sender, e)
+    {
+        if (e.sRQName.Contains("예수금상세현황"))     // 예수금 정보
+        if (e.sRQName.Contains("주식정보"))         // 종목 정보
+        if (e.sRQName.Contains("계좌평가현황요청"))   // 잔고 정보
+        // ... 기타 TR 처리
+    }
+    
+    // 실시간 시세 수신
+    private void OnReceiveRealData(sender, e)
+    {
+        if (e.sRealType.Equals("주식체결"))  // 실시간 체결 데이터
+        {
+            // 현재가, 등락율, 거래량 등 수신
+            // 매매 종목별 수익률 계산
+            // 익절/손절 조건 체크
+        }
+    }
+    
+    // 주문 접수/체결 수신
+    private void OnReceiveChejanData(sender, e)
+    {
+        if (e.sGubun.Equals("0"))  // 주문접수/체결
+        {
+            if (orderState.Equals("접수"))   // 주문 접수
+            if (orderState.Equals("체결"))   // 주문 체결
+        }
+        if (e.sGubun.Equals("1"))  // 잔고변경
+    }
+    
+    // 실시간 조건식 편입/이탈
+    private void OnReceiveRealConditionEvent(sender, e)
+    {
+        string itemCode = e.sTrCode;      // 종목코드
+        string type = e.strType;          // "I":편입, "D":이탈
+        string conditionName = e.strConditionName;
+        // 조건식 편입/이탈 처리
+    }
+}
+```
+
+#### ⏱️ **타이머 기반 모니터링**
+```csharp
+// 주문 체크 타이머
+private Timer _orderCheckTimer;
+
+private void OrderCheckTimer_Tick(object sender, EventArgs e)
+{
+    // 미체결 주문 체크
+    CheckUnconcludedCancelOrders();     // 취소 주문 체크
+    CheckUnconcludedDesignationOrders(); // 지정가 주문 체크
+}
+```
+
+---
+
+### 4️⃣ **MyTradingCondition.cs - 매매 조건식 모델**
+
+#### 🎯 **매매 전략 설정 변수들**
+```csharp
+public class MyTradingCondition
+{
+    // 기본 설정
+    public string account;              // 매매 계좌번호
+    public ConditionData conditionData; // 조건식 정보
+    public double itemInvestment;       // 종목당 투자금
+    public int buyingItemCount;         // 매수 종목수
+    
+    // 매수 전략
+    public int buyingType;              // 0:기본, 1:이동평균, 2:스토캐스틱, 3:볼린저, 4:엔벨로프
+    public int mesuoption1;             // 0:시장가, 1:지정가
+    public int buyingTransferType;      // 0:편입시바로매수, 1:편입가격대비매수
+    
+    // 추매 설정
+    public int reBuyingType;            // 0:기본추매, 1:이동평균근접
+    public double[] reBuyingPer;        // 추매 % 배열
+    
+    // 익절 설정
+    public int takeProfitUsing;         // 익절 사용여부
+    public int takeProfitType;          // 익절 방식
+    public double[] takeProfitPer;      // 익절 % 배열
+    
+    // 손절 설정
+    public int stopLossUsing;           // 손절 사용여부
+    public int stopLossType;            // 손절 방식
+    public double stopLossPer;          // 손절 %
+    
+    // TS 매도 설정
+    public int tsMedoUsing;             // TS매도 사용여부
+    public double[] tsMedoPer;          // TS매도 % 배열
+}
+```
+
+---
+
+### 5️⃣ **MyTradingItem.cs - 매매 종목 모델**
+
+#### 📊 **종목별 매매 현황 관리**
+```csharp
+public class MyTradingItem
+{
+    // 기본 정보
+    public string m_itemCode;           // 종목코드
+    public string m_itemName;           // 종목명
+    public string m_conditionName;      // 조건식명
+    
+    // 가격 정보
+    public double m_transferPrice;      // 편입가격
+    public double m_currentPrice;       // 현재가
+    public double m_averagePrice;       // 평균단가
+    public double m_upperLimitPrice;    // 상한가
+    
+    // 매수 정보
+    public bool m_bCompletePurchase;    // 매수완료 여부
+    public int m_totalQnt;              // 매수량
+    public int m_totalPurchaseAmount;   // 총매입금
+    public int m_orderAvailableQnt;     // 주문가능수량
+    
+    // 주문 정보
+    public string m_buyingOrderNumber;  // 매수주문번호
+    public bool m_bPurchased;           // 매수중 여부
+    public bool m_brePurchased;         // 추매중 여부
+    public bool m_bSold;                // 매도중 여부
+    
+    // 수익 정보
+    public double m_rateOfReturn;       // 수익률
+    public double m_finalRateOfReturn;  // 최종수익률
+    
+    // 배열 관리
+    public bool[] m_rePurchaseArray;    // 추매 배열 [6]
+    public bool[] m_tsMedoArray;        // TS매도 배열 [3]
+    public bool[] m_takeProfitArray;    // 익절 배열 [5]
+    
+    // 손익 계산
+    public List<ProfitLossCalculate> m_profitLossCalculateList; // 손익계산 리스트
+}
+```
+
+---
+
+### 6️⃣ **요청 관리 시스템**
+
+#### 🔄 **CheckRequestManager.cs - 조회 요청 관리**
+```csharp
+public class CheckRequestManager
+{
+    private Queue<Task> TaskQueue;      // Task 큐
+    private Thread WorkerThread;        // 작업 스레드
+    public int delayTime = 260;         // 딜레이 타임 (키움 제한)
+    
+    public void sendTaskData(Task task)
+    {
+        lock(TaskQueue)
+        {
+            TaskQueue.Enqueue(task);    // 큐에 작업 추가
+        }
+    }
+    
+    // 작업 스레드에서 순차 처리
+    private void ProcessTasks()
+    {
+        while (TaskQueue.Count > 0)
+        {
+            Task t = TaskQueue.Dequeue();
+            t.RunSynchronously();       // 동기 실행
+            Thread.Sleep(delayTime);    // 딜레이
+        }
+    }
+}
+```
+
+#### 📨 **OrderRequestManager.cs - 주문 요청 관리**
+- CheckRequestManager와 동일한 구조
+- 주문 관련 요청만 전담 처리
+- 별도 딜레이 타임 관리
+
+---
+
+## 🎛️ 대화상자 시스템
+
+### 📋 **ConditionSettingDialog.cs - 조건식 설정**
+```csharp
+// 주요 설정 항목들
+- 조건식 선택 (conditionComboBox)
+- 투자금 설정 (investmentPerItemTextBox)
+- 매수 종목수 (buyingItemCountTextBox)
+- 매수 전략 (buyingType: 기본/이동평균/스토캐스틱/볼린저/엔벨로프)
+- 추매 설정 (reBuyingPer 배열)
+- 익절 설정 (takeProfitPer 배열)
+- 손절 설정 (stopLossPer)
+- TS매도 설정 (tsMedoPer 배열)
+```
+
+### 📊 **ProfitLossDialog.cs - 손익 현황**
+```csharp
+// 손익 데이터 표시
+- 실현 손익 현황
+- 수익률 계산
+- 매매 내역 분석
+- 색상 표시 (수익:빨강, 손실:파랑)
+```
+
+### 🏠 **HoldingItemSettingDialog.cs - 보유종목 설정**
+```csharp
+// 보유종목 관리
+- 보유종목 리스트
+- 매도 조건 설정
+- 일괄 매도 기능
+```
+
+### 📝 **EntireLog.cs - 전체 로그**
+```csharp
+// 로그 관리
+- 전체 로그 표시
+- 시간별 로그 기록
+- 스크롤 기능
+```
+
+---
+
+## 🔄 매매 프로세스 플로우
+
+### 📈 **매수 프로세스**
+```
+1. 조건식 편입 신호 수신 (OnReceiveRealConditionEvent)
+   ↓
+2. 종목 정보 조회 (opt10001 TR)
+   ↓
+3. 매수 조건 검증 (가격, 수량, 예수금 등)
+   ↓
+4. 매수 주문 전송 (SendOrder API)
+   ↓
+5. 주문 접수 확인 (OnReceiveChejanData)
+   ↓
+6. 체결 확인 및 데이터 업데이트
+```
+
+### 📉 **매도 프로세스**
+```
+1. 실시간 시세 수신 (OnReceiveRealData)
+   ↓
+2. 수익률 계산 및 조건 체크
+   ↓
+3. 매도 조건 충족 확인
+   - 익절 조건 (takeProfitPer)
+   - 손절 조건 (stopLossPer)
+   - TS매도 조건 (tsMedoPer)
+   ↓
+4. 매도 주문 전송
+   ↓
+5. 체결 확인 및 손익 계산
+```
+
+---
+
+## 🛡️ 보안 및 안전 기능
+
+### 🔒 **사용자 인증 시스템**
+```csharp
+// UserAuthManager.cs
+- 인터넷 연결 확인 (IsInternetConnected)
+- API 서버 인증 (LoginAsync)
+- 세션 관리 (IsSessionValid)
+- 계좌 권한 검증 (실계좌/모의투자 구분)
+```
+
+### ⚠️ **리스크 관리**
+```csharp
+// 주문 제한
+- 예수금 한도 체크
+- 최대 매수 종목수 제한
+- 손절 강제 실행
+- 미체결 주문 관리
+
+// 오류 처리
+- 네트워크 연결 확인
+- API 응답 타임아웃 처리
+- 예외 상황 로깅
+```
+
+---
+
+## 📊 데이터 관리 시스템
+
+### 💾 **실시간 데이터 처리**
+```csharp
+// 주식체결 데이터 (OnReceiveRealData)
+- 현재가 (10)
+- 등락율 (12)
+- 거래량 (13, 15)
+- 시고저종 (16, 17, 18, 10)
+- 체결강도 (228)
+
+// 분봉 데이터 관리 (MyTradingItem)
+- 1,3,5,10분봉 계산
+- 이동평균선 계산
+- 기술적 지표 계산 (스토캐스틱, 볼린저밴드, 엔벨로프)
+```
+
+### 🔢 **기술적 지표 계산**
+```csharp
+// 이동평균선 계산
+public void calculateMovingAverage(int period)
+
+// 스토캐스틱 계산  
+public void calculateStochastic(int k, int d, int slow)
+
+// 볼린저밴드 계산
+public void calculateBollingerBands(int period, double multiplier)
+
+// 엔벨로프 계산
+public void calculateEnvelope(int period, double percentage)
+```
+
+---
+
+## 🎮 사용자 인터페이스
+
+### 🖥️ **MainForm 화면 구성**
+```csharp
+// 상단 패널
+- 로그인 버튼 (LoginButton)
+- 계좌 선택 (myAccountComboBox)
+- 비밀번호 입력 (passwordTextBox)
+
+// 중앙 영역
+- 매매조건식 목록 (tradingConditionDataGridView)
+- 매매진행종목 (tradingItemDataGridView)
+- 주문현황 (orderDataGridView)
+- 체결현황 (conclusionDataGridView)
+
+// 하단 영역
+- 로그 출력 (logListBox)
+- 예수금 정보 (curOrderAmountLabel)
+- 평가손익 (totalProfitLossLabel)
+
+// 우측 패널
+- 분봉 정보 (bunBongDataGridView)
+- 지표 보기 (indicatorPictureBox)
+```
+
+### 🎨 **UI 색상 및 스타일**
+```csharp
+// 색상 시스템
+- 수익: Color.Red
+- 손실: Color.Blue  
+- 중립: Color.Black
+- 배경: Color.FromArgb(202, 217, 230)
+- 버튼: Color.FromArgb(70, 139, 181)
+```
+
+---
+
+## ⚙️ 설정 및 환경
+
+### 🔧 **필수 설정**
+```csharp
+// 키움 OpenAPI 설정
+- KH OpenAPI+ 설치 필수
+- 계좌 개설 및 API 사용 신청
+- 조건식 미리 생성 필요
+
+// 프로그램 설정
+- .NET Framework 4.7.2 이상
+- Visual Studio 2019 이상
+- Windows 10 이상 권장
+```
+
+### 📦 **필요한 참조**
+```csharp
+// COM 참조
+- KH OpenAPI+ Type Library
+
+// NuGet 패키지
+- Newtonsoft.Json (사용자 인증용)
+
+// 네임스페이스
+using AxKHOpenAPILib;
+using KHOpenAPILib;
+```
+
+---
+
+## 🔧 트러블슈팅
+
+### ❌ **일반적인 오류들**
+
+#### 1. 키움 API 연결 오류
+```
+해결방법:
+- 키움 OpenAPI+ 재설치
+- 인증서 갱신
+- 방화벽 설정 확인
+- 키움 서버 점검 시간 확인
+```
+
+#### 2. 조건식 오류
+```
+해결방법:
+- 조건식 재생성
+- 조건식 명칭 한글/영문 확인
+- 조건식 개수 제한 확인 (최대 100개)
+```
+
+#### 3. 주문 오류
+```
+해결방법:
+- 예수금 부족 확인
+- 주문 가능 시간 확인 (9:00~15:30)
+- 종목 거래정지 여부 확인
+- 주문 수량 제한 확인
+```
+
+#### 4. 실시간 데이터 오류
+```
+해결방법:
+- 실시간 등록 개수 확인 (최대 200개)
+- 화면 번호 중복 확인
+- 네트워크 상태 확인
+```
+
+---
+
+## 📈 성능 최적화
+
+### ⚡ **응답 속도 개선**
+```csharp
+// TR 요청 최적화
+- CheckRequestManager로 순차 처리
+- 딜레이 타임 최적화 (260ms)
+- 불필요한 조회 최소화
+
+// 메모리 최적화
+- 사용하지 않는 실시간 등록 해제
+- 대용량 데이터 분할 처리
+- 가비지 컬렉션 최적화
+```
+
+### 🔄 **멀티스레딩 처리**
+```csharp
+// UI 스레드 분리
+- Invoke/BeginInvoke 사용
+- BackgroundWorker 활용
+- Task 기반 비동기 처리
+
+// 데이터 처리 최적화
+- 실시간 데이터 큐 처리
+- 배치 처리 구현
+```
+
+---
+
+## 📊 로깅 및 모니터링
+
+### 📝 **로그 시스템**
+```csharp
+// 로그 레벨
+- 정보: 일반적인 프로그램 동작
+- 경고: 주의가 필요한 상황
+- 오류: 예외 및 오류 상황
+
+// 로그 저장
+- 메모리: globalLogs List
+- 화면: logListBox
+- 파일: 별도 구현 필요
+```
+
+### 📈 **성능 모니터링**
+```csharp
+// 실시간 현황
+- 접속 상태 (GetConnectState)
+- 실시간 등록 개수
+- 메모리 사용량
+- CPU 사용률
+
+// 매매 성과
+- 총 수익률
+- 매매 횟수
+- 수익/손실 종목 수
+- 최대 드로우다운
+```
+
+---
+
+## 🚀 향후 개선 방안
+
+### 🔧 **기능 확장**
+```
+1. 백테스팅 시스템 구현
+2. 다양한 기술적 지표 추가
+3. 포트폴리오 최적화 기능
+4. 리스크 관리 강화
+5. 실시간 알림 시스템
+```
+
+### 📊 **데이터 분석**
+```
+1. 매매 성과 분석 도구
+2. 차트 분석 기능 강화
+3. 시장 데이터 수집 및 분석
+4. AI/ML 기반 예측 모델
+```
+
+### 🛡️ **보안 강화**
+```
+1. 암호화 통신 강화
+2. 접근 권한 세분화
+3. 로그 보안 강화
+4. 계좌 보안 강화
+```
+
+---
+
+## 📞 지원 정보
+
+### 🔗 **관련 문서**
+- [키움 OpenAPI+ 개발가이드](https://www.kiwoom.com/nkw.templateFrameSet.do?m=m1408000000)
+- [KHOpenAPI Help](키움 API 도움말)
+- [.NET Framework 문서](https://docs.microsoft.com/dotnet/framework/)
+
+###
