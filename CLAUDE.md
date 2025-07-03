@@ -208,19 +208,22 @@ UserLoginForm.cs                 → PyQt Dialog
 ## 멀티 PC 작업 환경 설정
 
 ### 현재 작업 환경
-- **사무실 PC**: 주 개발 환경 (WSL2 Ubuntu)
-- **집 PC**: 보조 개발 환경 (설정 예정)
+- **사무실 PC**: 주 개발 환경 (WSL2 Ubuntu + Claude Code)
+- **집 PC**: 보조 개발 환경 (WSL2 Ubuntu + Claude Code)
 - **GitHub 저장소**: claude-stock-trading-system
 
 ### 집 PC 초기 설정 가이드
 
-#### 1단계: 기본 개발 환경 설치
+#### 1단계: WSL2 Ubuntu 설치
 ```bash
-# Windows에서 WSL2 설치 (관리자 권한으로 PowerShell 실행)
-wsl --install
+# Windows에서 WSL2 + Ubuntu 설치 (관리자 권한으로 PowerShell 실행)
+wsl --install -d Ubuntu
 
-# 또는 기존 Linux 환경에서
+# WSL2가 이미 설치된 경우 Ubuntu 업데이트
 sudo apt update && sudo apt upgrade -y
+
+# 필수 패키지 설치
+sudo apt install curl wget git build-essential -y
 ```
 
 #### 2단계: Git 설정
@@ -260,33 +263,73 @@ ssh -T git@github.com
 git remote set-url origin git@github.com:jang1230/claude-stock-trading-system.git
 ```
 
-#### 5단계: 개발 도구 설치 (선택사항)
+#### 5단계: Claude Code 설치
 ```bash
-# C# 개발 (Visual Studio Code + C# extension)
-sudo snap install code --classic
+# Claude Code 설치 (공식 설치 방법)
+# 1. NPM 설치 (Node.js 포함)
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Python 개발 환경
-sudo apt install python3 python3-pip python3-venv
+# 2. Claude Code 설치
+npm install -g @anthropic/claude-code
+
+# 3. Claude Code 인증 (API 키 필요)
+claude auth login
+
+# 4. 설치 확인
+claude --version
+```
+
+#### 6단계: 추가 개발 도구 설치 (선택사항)
+```bash
+# C# 개발 환경
+sudo apt install dotnet-sdk-6.0 -y
+
+# Python 개발 환경  
+sudo apt install python3 python3-pip python3-venv -y
+
+# Visual Studio Code (Claude Code와 함께 사용)
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+sudo apt update
+sudo apt install code -y
 ```
 
 ### 일상적인 멀티 PC 작업 플로우
 
-#### 🏢 사무실에서 작업 시작
+#### 🏢 사무실에서 작업 시작 (WSL2 Ubuntu + Claude Code)
 ```bash
-git pull                    # 집에서 작업한 내용 받아오기
-# 작업 진행...
+# WSL2 Ubuntu 터미널에서
+cd /mnt/d/claude-project      # 또는 작업 디렉토리
+git pull                      # 집에서 작업한 내용 받아오기
+
+# Claude Code로 작업 진행
+claude                        # Claude Code 대화형 모드 시작
+# 또는
+claude "C# 코드 분석 및 개선 작업 진행"
+
+# 작업 완료 후
 git add .
 git commit -m "feat: 새 기능 구현"
-git push                    # GitHub에 업로드
+git push                      # GitHub에 업로드
 ```
 
-#### 🏠 집에서 작업 계속
+#### 🏠 집에서 작업 계속 (WSL2 Ubuntu + Claude Code)
 ```bash
-git pull                    # 사무실에서 작업한 내용 받아오기  
-# 작업 진행...
+# WSL2 Ubuntu 터미널에서
+cd claude-stock-trading-system
+git pull                      # 사무실에서 작업한 내용 받아오기
+
+# Claude Code로 작업 진행  
+claude                        # Claude Code 대화형 모드 시작
+# 또는
+claude "Python 변환 작업 계속 진행"
+
+# 작업 완료 후
 git add .
-git commit -m "refactor: 코드 리팩토링"
-git push                    # GitHub에 업로드
+git commit -m "feat: Python 변환 작업 진행"
+git push                      # GitHub에 업로드
 ```
 
 ### 충돌 방지 및 해결 가이드
@@ -308,17 +351,19 @@ git push
 
 ### PC별 역할 분담 (권장)
 
-#### 🏢 사무실 PC
+#### 🏢 사무실 PC (WSL2 Ubuntu + Claude Code)
 - C# 코드 분석 및 개선
-- 데이터베이스 모델 설계
+- 데이터베이스 모델 설계  
 - 웹 API 개발
 - GitHub 이슈 관리
+- Claude Code를 통한 코드 리팩토링
 
-#### 🏠 집 PC  
+#### 🏠 집 PC (WSL2 Ubuntu + Claude Code)
 - Python 변환 작업
 - PyQt UI 개발
 - 테스트 및 디버깅
-- 문서 작성
+- 문서 작성 (CLAUDE.md, README.md 등)
+- Claude Code를 통한 Python 코드 생성
 
 ### 백업 및 동기화 전략
 
@@ -332,8 +377,28 @@ source ~/.bashrc
 
 #### 중요 파일 별도 백업
 - `CLAUDE.md`: 프로젝트 가이드 (항상 최신 유지)
-- `.gitignore`: ignore 규칙
+- `.gitignore`: ignore 규칙  
 - `README.md`: 프로젝트 소개
+
+### Claude Code 활용 팁
+
+#### 집 PC에서 Claude Code 최적 활용법
+```bash
+# 프로젝트 디렉토리에서 Claude Code 시작
+cd claude-stock-trading-system
+claude
+
+# 주요 활용 명령어
+claude "CLAUDE.md 파일을 참조해서 현재 프로젝트 상황 파악해줘"
+claude "C# MainForm.cs를 Python PyQt로 변환해줘"  
+claude "TradingManager 클래스를 분석하고 Python 버전 작성해줘"
+claude "현재 작업한 내용을 GitHub에 커밋해줘"
+```
+
+#### 동일한 작업 환경 보장
+- **사무실 & 집 PC 모두**: WSL2 Ubuntu + Claude Code
+- **동일한 프롬프트 방식**: CLAUDE.md 기반 컨텍스트 공유
+- **일관된 개발 플로우**: Git + Claude Code 조합
 
 ## GitHub 버전 관리 전략
 
