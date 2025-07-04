@@ -7,40 +7,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 이 프로젝트는 **C# 주식 자동매매 시스템**을 **Python으로 변환**하는 작업입니다.
 
 ### 현재 시스템 구성
-- **웹 관리 시스템** (`claude/UserManagementSystem/`): ASP.NET Core Web API
-- **데스크톱 자동매매 앱** (`claude2/`): C# Windows Forms + 키움 OpenAPI
+- **웹 관리 시스템** (`csharp/web-management/`): ASP.NET Core Web API
+- **데스크톱 자동매매 앱** (`csharp/desktop-trading/`): C# Windows Forms + 키움 OpenAPI
 
 ### 변환 목표
 - C# → Python 완전 변환
 - 기능과 UI 레이아웃 최대한 유지
 - 안정적이고 점진적인 변환 진행
 
+## 프로젝트 구조 재편성 완료 (2025.07.04)
+
+### ✅ 새로운 폴더 구조
+```
+claude-stock-trading-system/
+├── csharp/
+│   ├── web-management/        # 기존 claude/ → 웹 관리 시스템
+│   └── desktop-trading/       # 기존 claude2/ → 데스크톱 자동매매 앱
+├── python/
+│   ├── web-management/        # FastAPI 웹 서버 (향후 개발)
+│   └── desktop-trading/       # PyQt 데스크톱 앱 (향후 개발)
+├── docs/                      # 프로젝트 문서 (기존 txt 파일들)
+├── shared/                    # 공통 리소스 (향후 사용)
+├── CLAUDE.md                  # 프로젝트 가이드
+└── README.md                  # 프로젝트 소개
+```
+
+### 🎯 **다음 필수 작업**: GitHub 저장소 정리
+**중요**: 현재 로컬에서만 폴더 구조가 변경되었습니다. 다음 작업에서 GitHub 저장소에도 동일한 구조로 업데이트해야 합니다.
+
+1. **Git 변경사항 커밋 및 푸시**
+   - 현재 변경된 폴더 구조를 GitHub에 반영
+   - 기존 파일들의 이동 기록 유지
+   - 새로운 폴더 구조로 저장소 정리
+
+2. **GitHub Actions 및 설정 업데이트**
+   - 경로 변경에 따른 CI/CD 설정 수정
+   - README.md 업데이트 (새로운 구조 반영)
+
 ## 변환 전략 및 순서
 
-### 1단계: C#에서 UI 개선 (현재 단계)
-- 기존 Windows Forms UI 완성
-- 사용자 경험 개선
-- 레이아웃 및 기능 최적화
+### 1단계: 프로젝트 구조 정리 ✅ 완료
+- 로컬 폴더 구조 재편성 완료
+- C#과 Python 명확히 분리
+- 문서 파일 체계적 정리
 
-### 2단계: 데이터베이스 모델 변환
+### 2단계: GitHub 저장소 정리 (진행 예정)
+- 변경사항 GitHub에 반영
+- 저장소 구조 동기화
+
+### 3단계: 데이터 모델 클래스 변환 (우선순위 높음)
+- MyTradingCondition, MyTradingItem 등 핵심 모델
+- C# 클래스 → Python 클래스 (dataclass 사용)
+- 개별 테스트 및 검증
+
+### 4단계: 비즈니스 로직 변환
+- LoginManager, TradingManager 등
+- 키움 OpenAPI → pykiwoom 라이브러리
+
+### 5단계: 데이터베이스 모델 변환
 - C# Entity Framework → Python SQLAlchemy
 - User, Admin 모델 변환
 - 데이터베이스 스키마 유지
 
-### 3단계: 웹 API 서버 변환
+### 6단계: 웹 API 서버 변환
 - ASP.NET Core → FastAPI
 - AuthController → FastAPI 라우터
 - BCrypt 인증 시스템 유지
 
-### 4단계: 데이터 모델 클래스 변환
-- MyTradingCondition, MyTradingItem 등
-- C# 클래스 → Python 클래스 (dataclass 사용)
-
-### 5단계: 비즈니스 로직 변환
-- LoginManager, TradingManager 등
-- 키움 OpenAPI → pykiwoom 라이브러리
-
-### 6단계: UI 레이아웃 변환
+### 7단계: UI 레이아웃 변환
 - Windows Forms → PyQt5/6
 - 90% 유사한 외관 목표
 - 기존 사용자 경험 유지
@@ -81,14 +115,14 @@ numpy==1.25.2
 
 ## 핵심 파일 구조
 
-### 웹 관리 시스템 (claude/UserManagementSystem/)
+### 웹 관리 시스템 (csharp/web-management/)
 ```
 Controllers/AuthController.cs     → FastAPI 라우터로 변환
 Models/User.cs, Admin.cs         → SQLAlchemy 모델로 변환
 admin.html                       → Vue.js/React 또는 Jinja2 템플릿
 ```
 
-### 자동매매 앱 (claude2/)
+### 자동매매 앱 (csharp/desktop-trading/)
 ```
 MainForm.cs                      → PyQt MainWindow
 TradingManager.cs                → Python 클래스 (pykiwoom 사용)
@@ -463,9 +497,20 @@ docs/                  # 추가 문서
 - pykiwoom 문서: https://github.com/pykiwoom/pykiwoom
 
 ### 변환 진행 상황
-- **현재 단계**: C# 코드 분석 완료, UI 개선 준비 중
-- **다음 단계**: UI 개선 후 Python 데이터베이스 모델 변환
+- **완료 단계**: 프로젝트 구조 재편성 (2025.07.04)
+- **현재 단계**: GitHub 저장소 정리 필요
+- **다음 단계**: 데이터 모델 클래스 Python 변환
 - **예상 완료**: 단계별 진행 (약 2-3개월 소요 예상)
+
+### 📝 작업 일지
+
+#### 2025.07.04 - 프로젝트 구조 재편성 완료
+- ✅ 새로운 폴더 구조 생성 (csharp/, python/, docs/, shared/)
+- ✅ 기존 claude/ → csharp/web-management/ 이동
+- ✅ 기존 claude2/ → csharp/desktop-trading/ 이동
+- ✅ 문서 파일들을 docs/ 폴더로 정리
+- ✅ 파일 무결성 검증 완료
+- 🔲 **다음 작업**: GitHub 저장소에 변경사항 반영
 
 ---
 
